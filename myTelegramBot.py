@@ -1,16 +1,4 @@
-from apikey import TOKEN
-
-"""Simple Bot to reply to Telegram messages.
-This program is dedicated to the public domain under the CC0 license.
-This Bot uses the Updater class to handle the bot.
-First, a few handler functions are defined. Then, those functions are passed to
-the Dispatcher and registered at their respective places.
-Then, the bot is started and runs until we press Ctrl-C on the command line.
-Usage:
-Basic Echobot example, repeats messages.
-Press Ctrl-C on the command line or send a signal to the process to stop the
-bot.
-"""
+# coding=utf-8
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
@@ -21,23 +9,40 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
+with open('apikey', 'r') as apikey_file:
+    TOKEN=apikey_file.read()
+keywords = ["lunes","martes",'miercoles',
+            'miércoles',"jueves","viernes",
+            "sabado",'sábado',"domingo","0",
+            "1","2","3","4","5","6","7","8","9"]
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 def start(bot, update):
     """Send a message when the command /start is issued."""
-    update.message.reply_text('Hi!')
+    update.message.reply_text('Encendido')
 
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('Nadie puede oir tus gritos')
 
 
 def echo(bot, update):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
+def detecta_fecha(msg):
+    for word in keywords:
+        if word in msg:
+            return True
+    return False
+
+def fecha(bot, update):
+    msg = update.message.text.lower()
+    if detecta_fecha(msg):
+        update.message.reply_text("Posible fecha detectada! : "+msg.upper())
+    
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
@@ -55,9 +60,11 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("fecha", fecha))
 
     # on noncommand i.e message - echo the message on Telegram
-    dp.add_handler(MessageHandler(Filters.text, echo))
+    # dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.text, fecha))
 
     # log all errors
     dp.add_error_handler(error)
