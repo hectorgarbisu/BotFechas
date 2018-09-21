@@ -1,5 +1,4 @@
-# coding=utf-8
-
+# -*- coding: utf-8 -*-
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 
@@ -10,14 +9,21 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 with open('apikey', 'r') as apikey_file:
-    TOKEN=apikey_file.read()
-keywords = ["lunes","martes",'miercoles',
-            'miércoles',"jueves","viernes",
-            "sabado",'sábado',"domingo","0",
-            "1","2","3","4","5","6","7","8","9"]
+    TOKEN = apikey_file.read()
+
+keywords = ["lunes", "martes", 'miercoles',
+            u'miércoles', "jueves", "viernes",
+            "sabado", u'sábado', "domingo", "0",
+            "1", "2", "3", "4", "5", "6", "7", "8", "9",
+            "enero", "febrero", "marzo", "abril",
+            "mayo", "junio", "julio", "agosto",
+            "septiembre", "setiembre" "octubre", "noviembre",
+            "diciembre"]
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
+
+
 def start(bot, update):
     """Send a message when the command /start is issued."""
     update.message.reply_text('Encendido')
@@ -32,17 +38,23 @@ def echo(bot, update):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
+
 def detecta_fecha(msg):
     for word in keywords:
         if word in msg:
             return True
     return False
 
-def fecha(bot, update):
+
+def texto(bot, update):
     msg = update.message.text.lower()
+    response = ""
     if detecta_fecha(msg):
-        update.message.reply_text("Posible fecha detectada! : "+msg.upper())
-    
+        response += "Hola, " + update.message.from_user.first_name
+        response += "\nposible fecha detectada! : "
+        response += msg.upper()
+        update.message.reply_text(response)
+
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
@@ -60,11 +72,10 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("fecha", fecha))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
-    dp.add_handler(MessageHandler(Filters.text, fecha))
+    dp.add_handler(MessageHandler(Filters.text, texto))
 
     # log all errors
     dp.add_error_handler(error)
