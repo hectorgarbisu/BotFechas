@@ -1,7 +1,8 @@
-#micalendariiito
 import calendar
 import datetime
 
+# Stores and retrieves events at specific days, months, years, or weeks
+# All JSON
 class calendario(object):
     def __init__(self):
         self.cuac = 5
@@ -37,7 +38,6 @@ class calendario(object):
             day = monday + delta
             week.append(self.years.get(day.year).get(day.month).get(day.day))
         return week
-        #monday was previus month
 
 
 
