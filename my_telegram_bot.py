@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
+from text_analyzer import get_date
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -10,15 +11,6 @@ logger = logging.getLogger(__name__)
 
 with open('apikey', 'r') as apikey_file:
     TOKEN = apikey_file.read()
-
-keywords = ["lunes", "martes", 'miercoles',
-            u'miércoles', "jueves", "viernes",
-            "sabado", u'sábado', "domingo", "0",
-            "1", "2", "3", "4", "5", "6", "7", "8", "9",
-            "enero", "febrero", "marzo", "abril",
-            "mayo", "junio", "julio", "agosto",
-            "septiembre", "setiembre" "octubre", "noviembre",
-            "diciembre"]
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
@@ -39,18 +31,13 @@ def echo(bot, update):
     update.message.reply_text(update.message.text)
 
 
-def detecta_fecha(msg):
-    for word in keywords:
-        if word in msg:
-            return True
-    return False
-
-
 def texto(bot, update):
+    print("message received: ")
+    print(update)
     msg = update.message.text.lower()
     response = ""
-    if detecta_fecha(msg):
-        response += "Hola, " + update.message.from_user.first_name
+    if get_date(msg):
+        response += "Hola, " #+ update.message.from_user.first_name
         response += "\nposible fecha detectada! : "
         response += msg.upper()
         update.message.reply_text(response)
