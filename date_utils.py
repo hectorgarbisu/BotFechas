@@ -69,7 +69,7 @@ def replace_all(string, chars, final_char):
         for char1, char2 in zip(chars,chars[1::]):
             new_string = new_string.replace(char1, char2)
         return new_string.replace(chars[-1], final_char)
-# MOCK
+
 def is_date(string):
     tokens = replace_all(string, ['/','-',':',',','.'], " ").split()
     if len(tokens) == 2:
@@ -80,7 +80,6 @@ def is_date(string):
             return True
     return False
 
-# MOCK
 def str_to_date(string):
     tokens = replace_all(string, ['/','-',':',',','.'], " ").split()
     current_year = tokens[2] if len(tokens)==3 else datetime.date.today().year

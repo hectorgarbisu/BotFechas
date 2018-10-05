@@ -26,9 +26,12 @@ class state_machine(object):
     # _
     def S0(self, token):
         if token in ["el", "este"]: return "S7"
-        if token in u"mañana": return "S8"
-        if token.endswith("a") and not token in "para": return "S9"
-        if token in "pasado": return "S13"
+        if token == u'mañana': 
+            self.date = datetime.date.today() + datetime.timedelta(days=1)
+            print("que broma es esta")
+            return "S8"
+        if token.endswith("a") and not token == "para": return "S9"
+        if token == "pasado": return "S13"
         if du.is_month_day(token):     
             self.date = du.update_month_day(self.date, token)
             return "S11"
@@ -36,7 +39,6 @@ class state_machine(object):
 
     # mañana _
     def S8(self, token):
-        self.date = datetime.date.today() + datetime.timedelta(days=1)
         return "S0"
 
     # el próximo _
@@ -65,27 +67,27 @@ class state_machine(object):
     
     # el jueves _
     def S5(self, token):
-        if token in "de":  return "S5_1"
+        if token == "de":  return "S5_1"
+        if token == "que":  return "S5_4"
         if du.is_month_day(token): 
             self.date = du.update_month_day(self.date, token)
             return "S4"
         return "S0"
     def S5_1(self, token):
-        if token in "esta": return "S5_2_1"
-        if token in "la": return "S5_2"
+        if token == "esta": return "S5_2_1"
+        if token == "la": return "S5_2"
         return "S0"
     def S5_2_1(self, token):
         return "S0"
     def S5_2(self, token):
-        if token in "semana": return "S5_3"
+        if token == "semana": return "S5_3"
         return "S0"
     def S5_3(self, token):
-        if token in "que": return "S5_4"
+        if token == "que": return "S5_4"
         return "S0"
-    def S5_4(self, token):
-        if token in "viene": return "S6"
+    def S5_4(self, token): #de la semana que viene, el domingo que viene
+        if token == "viene": return "S6"
         return "S0"
-
     # la semana que viene _
     def S6(self, token):
         self.date = self.date + datetime.timedelta(days=7)
@@ -99,7 +101,7 @@ class state_machine(object):
         if du.is_month_day(token):
             self.date = du.update_month_day(self.date, token)
             return "S4"
-        if token in u"próximo": 
+        if token in [u"próximo", "proximo"]: 
             return "S1"
         if token in du.week_day: 
             self.date = du.this_weekday_to_date(token)
@@ -113,7 +115,7 @@ class state_machine(object):
         return "S0"
     # 11 _
     def S11(self, token):
-        if token in "de":
+        if token == "de":
             return "S11_1"
         return "S0"    
     # 11 de _
@@ -129,7 +131,7 @@ class state_machine(object):
         
     # pasado _
     def S13(self, token):
-        if token in u"mañana":
+        if token == u"mañana":
             self.date = datetime.date.today() + datetime.timedelta(days=2) 
         return "S0"
 
@@ -138,13 +140,13 @@ class state_machine(object):
         if du.is_month(token): 
             self.date = du.update_month(self.date, token)
             return "SM4"
-        if token in "mes": return "SM_1"
+        if token == "mes": return "SM_1"
         return "S0"
     def SM_1(self, token):
-        if token in "que": return "SM_2"
+        if token == "que": return "SM_2"
         return "S0"
     def SM_2(self, token):
-        if token in "viene":
+        if token == "viene":
             self.date = du.add_months(self.date, 1)
         return "S0"
 

@@ -32,13 +32,14 @@ def echo(bot, update):
 
 
 def texto(bot, update):
-    print("message received: ")
-    print(update)
     msg = update.message.text.lower()
+    print("message received: " + msg)
     response = ""
-    if get_date(msg):
+    (date,trace) = get_date(msg)
+    print trace
+    if date:
         response += "Hola, " #+ update.message.from_user.first_name
-        response += "\nposible fecha detectada! : "
+        response += "\nposible fecha detectada! : " + str(date.day) + " " + str(date.month) + " " + str(date.year) + " en :\n"
         response += msg.upper()
         update.message.reply_text(response)
 
