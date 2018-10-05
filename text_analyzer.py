@@ -3,59 +3,103 @@
 # pylint: disable=E1101 
 
 import sys
+import datetime
+import date_utils as du
 
-week_day = u"lunes martes miercoles miércoles jueves viernes sabado sábado domingo".split()
-cardinal = [str(x+1) for x in range(31)]
-ordinal = u"primero segundo tercero cuarto quinto sexto séptimo septimo octavo noveno décimo decimo undécimo decimoprimero decimoprimer duodécimo decimosegundo".split()
-mes = "enero febrero marzo abril mayo junio julio agosto septiembre setiembre octubre noviembre diciembre".split()
 
-# TODO: a pretty state machine
+class state_machine(object):
+# Previous state is used to accomodate dates so that
+# "el jueves" wont fire a positive answer if it part of
+# a larger date such as "el jueves de la semana que viene"
+    def __init__ (self):
+        self.date = datetime.date.today()
+        self.current_state = "S0"
+        self.previous_state = "S0"
+        self.terminal_states = "S8 S12 S2 S3 S4 S5 S6 SM4 SM3 SM6 SM7".split()
 
-# States have a dictionary of rules
-# Rules are defined by a token and the state that token leads to
-# Next states are on string form
+    def is_terminal(self):
+        return (self.previous_state in self.terminal_states \
+                and self.current_state is "S0")
 
-class State(object):
-    def __init__ (self, rules = {}):
-        self.rules = rules
+    def S0(self, token):
+        if token in ["el", "este"]: return "S7"
+        if token in u"mañana": return "S8"
+        if token.endswith("a"): return "S9"
+        if token in "pasado": return "S13"
+        return "S0"
 
-    def transitionRule(self, input):
-        return eval(self.rules.get(input, "S0"))
+    # mañana
+    def S8(self, token):
+        self.date = datetime.date.today() + datetime.timedelta(days=1)
+        return "S0"
 
-S0 = State({
-    "el" : "S1",
-    "este" : "S2"
-    })
+    def S1(self, token):
+        return "S0"
 
-S1 = State()
-S2 = State()
-S3 = State()
-S4 = State()
-S5 = State()
-S6 = State()
-S7 = State()
-S8 = State()
-S9 = State()
-S10 = State()
-S11 = State()
-S12 = State()
-S13 = State()
-S14 = State()
-S15 = State()
-S16 = State()
-S17 = State()
-S18 = State()
+    def S2(self, token):
+        return "S0"
 
+    def S3(self, token):
+        return "S0"
+
+    def S4(self, token):
+        return "S0"
+
+    def S5(self, token):
+        return "S0"
+
+    def S6(self, token):
+        return "S0"
+
+    def S7(self, token):
+        if token in [u"día", "dia"]: return "S7"
+        if du.is_month_day(token):
+            self.date = du.update_day(self.date, token)
+            return "S4"
+        if token in u"próximo": 
+            return "S1"
+        if token in du.week_day: 
+            self.date = du.thisweekday_to_date(token)
+            return "S5"
+        return "S0"
+
+    def S9(self, token):
+        return "S0"
+
+    def S10(self, token):
+        return "S0"
+
+    def S11(self, token):
+        return "S0"
+        
+    # pasado _
+    def S13(self, token):
+        if token in u"mañana": return "S12"
+        return "S0"
+
+    # pasado mañana
+    def S12(self, token):
+        self.date = datetime.date.today() + datetime.timedelta(days=2)
+        return "S0"
+
+    def transit(self, token):
+        self.previous_state = self.current_state
+        self.current_state = eval("self."+self.current_state)(token)
+        return self
+        
 def get_date(msg):
-    # NOT IMPLEMENTED
     tokens = msg.split()
+    sm = state_machine()
+    trace = []
     if len(tokens) < 2:
-        return None
-    current_state = S0
+        return (None,trace)
     for token in tokens:
-        currrent_state = current_state.transitionRule(token)
+        trace.append(sm.current_state)
+        sm.transit(token)
+        if sm.is_terminal():
+            return (sm.date, trace)
 
-    return 2
+    return (None, trace)
 
 
 if __name__ == "__main__":
@@ -64,9 +108,10 @@ if __name__ == "__main__":
     mensajes_fechados = \
         [u"MENSAJES CON FECHA: dos de abril:",
          u" el cinco de mayo tengo clase de canto ",
-         u" mañana tendré hambre",
+         u" mañana tendré hambre, mucha mucha mucha",
          u" el 04/01 del año que viene milagritos++",
          u" el lunes te cuento el chiste",
+         u" y mañana tengo más deberes",
          u" el 3 de marzo ",
          u" el domingo fiesta",
          u" pasado mañana almuerzo con mis padres",
@@ -77,6 +122,8 @@ if __name__ == "__main__":
 
     mensajes_no_fechados = \
         [u"MENSAJES SIN FECHA",
+         u" puta mañana, cómo duele", 
+         u" el mañana nunca muere ",
          u" hola buenas  ",
          u" el cuarto número es el 3",
          u" el 4º número es el 4 segun matlab",
@@ -89,13 +136,15 @@ if __name__ == "__main__":
          ]
 
     for ii in mensajes_fechados:
-        date = get_date(ii)
+        (date,trace) = get_date(ii)
         color = Fore.GREEN if date else Fore.RED
         print(color + ii + Style.RESET_ALL)
+        print(trace, date)
 
     for ii in mensajes_no_fechados:
-        date = get_date(ii)
+        (date,trace) = get_date(ii)
         color = Fore.RED if date else Fore.GREEN
         print(color + ii + Style.RESET_ALL)
+        print(trace, date)
 
   
