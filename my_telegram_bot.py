@@ -2,6 +2,7 @@
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import logging
 from text_date_extractor import get_date
+from bot_calendar import calendario
 
 # Enable logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 
 with open('apikey', 'r') as apikey_file:
     TOKEN = apikey_file.read()
+
+cal = calendario()
 
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
@@ -30,19 +33,22 @@ def echo(bot, update):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
+def week(bot, update):
+    """ retrieves current week events """
+    update.message.reply_text(cal.get_this_week())
 
 def texto(bot, update):
     msg = update.message.text.lower()
-    print("message received: " + msg)
     response = ""
     (date,trace) = get_date(msg)
+    print("message received: " + msg)
     print trace
     if date:
-        response += "Hola, " #+ update.message.from_user.first_name
+        cal.add_event(msg, date)
+        response += "Hola, " + update.message.from_user.first_name
         response += "\nposible fecha detectada! : " + str(date.day) + " " + str(date.month) + " " + str(date.year) + " en :\n"
         response += msg.upper()
         update.message.reply_text(response)
-
 
 def error(bot, update, error):
     """Log Errors caused by Updates."""
@@ -60,6 +66,7 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
+    dp.add_handler(CommandHandler("week", week))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
