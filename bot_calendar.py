@@ -9,6 +9,7 @@ class calendario(object):
         self.events = { }
         
     def add_event (self, event, date):
+        """ add_event (event, date): saves string event at date """
         num = self.date_to_total_days(date)
         if num in self.events:
             self.events[num].append(event)

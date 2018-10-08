@@ -29,7 +29,7 @@ class state_machine(object):
         if token == u'mañana': 
             self.date = datetime.date.today() + datetime.timedelta(days=1)
             return "S8"
-        if token.endswith("a") and not token == "para": return "S9"
+        if token.endswith("a") and not token in ["para", "toca", "hola"]: return "S9"
         if token == "pasado": return "S13"
         if du.is_month_day(token):     
             self.date = du.update_month_day(self.date, token)
@@ -78,7 +78,7 @@ class state_machine(object):
             self.date = du.str_to_date(token)
             return "SF"
         return "S0"
-        
+
     def S5_1(self, token):
         if token == "esta": return "S5_2_1"
         if token == "la": return "S5_2"
@@ -138,7 +138,8 @@ class state_machine(object):
     # pasado _
     def S13(self, token):
         if token == u"mañana":
-            self.date = datetime.date.today() + datetime.timedelta(days=2) 
+            self.date = self.date + datetime.timedelta(days=2) 
+        if token == u"pasado":  return "S13"
         return "S0"
 
     # el día cuatro de _ 

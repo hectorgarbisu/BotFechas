@@ -1,3 +1,4 @@
 apikey
 .vscode
 *.pyc
+__pycache__
