@@ -28,13 +28,15 @@ class state_machine(object):
         if token in ["el", "este"]: return "S7"
         if token == u'mañana': 
             self.date = datetime.date.today() + datetime.timedelta(days=1)
-            print("que broma es esta")
             return "S8"
         if token.endswith("a") and not token == "para": return "S9"
         if token == "pasado": return "S13"
         if du.is_month_day(token):     
             self.date = du.update_month_day(self.date, token)
             return "S11"
+        if du.is_date(token):
+            self.date = du.str_to_date(token)
+            return "SF"
         return "S0"
 
     # mañana _
@@ -72,7 +74,11 @@ class state_machine(object):
         if du.is_month_day(token): 
             self.date = du.update_month_day(self.date, token)
             return "S4"
+        if du.is_date(token):
+            self.date = du.str_to_date(token)
+            return "SF"
         return "S0"
+        
     def S5_1(self, token):
         if token == "esta": return "S5_2_1"
         if token == "la": return "S5_2"
@@ -162,6 +168,7 @@ class state_machine(object):
         return "S0"
 
 def get_date(msg):
+    trash_chars = ',.!ç?¿/:'
     tokens = (msg + " padding ").split()
     sm = state_machine()
     trace = []
@@ -169,7 +176,7 @@ def get_date(msg):
         return (None,trace)
     for token in tokens:
         trace.append(sm.current_state)
-        sm.transit(token)
+        sm.transit(token.strip(trash_chars))
         if sm.is_terminal():
             return (sm.date, trace)
 

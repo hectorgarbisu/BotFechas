@@ -33,21 +33,32 @@ def echo(bot, update):
     """Echo the user message."""
     update.message.reply_text(update.message.text)
 
+def days(bot, update, args=[1]):
+    """ retrieves events for the following days """
+    days_events = cal.get_days(int(args[0]))
+    if days_events: update.message.reply_text("\n".join(days_events))
+
 def week(bot, update):
     """ retrieves current week events """
-    update.message.reply_text(cal.get_this_week())
+    this_weeks_events =  cal.get_this_week()
+    if this_weeks_events: update.message.reply_text("\n".join(this_weeks_events))
+
+
+def month(bot, update):
+    """ retrieves current month events """
+    this_month_events = cal.get_this_month()
+    if this_month_events: update.message.reply_text("\n".join(this_month_events))
 
 def texto(bot, update):
     msg = update.message.text.lower()
     response = ""
     (date,trace) = get_date(msg)
     print("message received: " + msg)
-    print trace
+    print(trace)
     if date:
         cal.add_event(msg, date)
-        response += "Hola, " + update.message.from_user.first_name
-        response += "\nposible fecha detectada! : " + str(date.day) + " " + str(date.month) + " " + str(date.year) + " en :\n"
-        response += msg.upper()
+        response += "posible fecha detectada para " +  update.message.from_user.first_name + "! : " + str(date.day) + "/" + str(date.month) + "/" + str(date.year) + " en :\n"
+        response += msg
         update.message.reply_text(response)
 
 def error(bot, update, error):
@@ -66,7 +77,9 @@ def main():
     # on different commands - answer in Telegram
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-    dp.add_handler(CommandHandler("week", week))
+    dp.add_handler(CommandHandler("semana", week))
+    dp.add_handler(CommandHandler("mes", month))
+    dp.add_handler(CommandHandler("dias", days, pass_args=True))
 
     # on noncommand i.e message - echo the message on Telegram
     # dp.add_handler(MessageHandler(Filters.text, echo))
