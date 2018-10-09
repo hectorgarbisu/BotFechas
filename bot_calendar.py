@@ -2,16 +2,29 @@ import calendar
 import datetime
 import time
 from calendar import monthrange
-
+import pickle
 # Stores and retrieves events at specific days, months, years, or weeks
 
 
 class calendario(object):
-    def __init__(self):
-        #days_from_epoch = int(time.mktime(datetime.date.today().timetuple()))/(24*60*60)
-        self.events = {}
 
-    def add_event(self, event, date):
+
+    def __init__(self):
+        self.calendar_path = "./data/calendar_object.dat"
+        #days_from_epoch = int(time.mktime(datetime.date.today().timetuple()))/(24*60*60)
+        self.load_from_disk()
+
+    
+    def load_from_disk(self):
+        self.events = {}
+        with open(self.calendar_path, 'rb') as calendar_file:
+            self.events = pickle.load(calendar_file)
+
+    def save_to_disk(self):
+        with open(self.calendar_path, 'wb') as calendar_file:
+            pickle.dump(self.events, calendar_file)
+           
+    def add_event(self, event="", date=datetime.date.today()):
         """ add_event (event, date): saves string event at date """
         num = self.date_to_total_days(date)
         if num in self.events:
@@ -43,7 +56,7 @@ class calendario(object):
         return lapse
 
     def delete_all(self):
-        self.events = {}
+        self.events.clear()
 
     def delete_old(self):
         self.events = {k: v for k, v in self.events.items() if k > self.date_to_total_days()}
@@ -65,7 +78,11 @@ def main():
     print(cal.get_days(20))
     cal.delete_old()
     print(cal.events)
-
+    cal.save_to_disk()
+    cal.delete_all()
+    print(cal.events)
+    cal.load_from_disk()
+    print(cal.events)
 
 if __name__ == "__main__":
     main()

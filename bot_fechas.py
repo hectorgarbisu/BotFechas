@@ -11,7 +11,7 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 logger = logging.getLogger(__name__)
 
-with open('apikey', 'r') as apikey_file:
+with open('./data/apikey', 'r') as apikey_file:
     TOKEN = apikey_file.read()
 
 # calendario object that handles calendar data (like storing and retrieving events)
@@ -23,6 +23,15 @@ temp_date_dict = {}
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 
+command_list = "/start: no hace nada\n" + " /help: muestra esta lista\n" +\
+"/semana: muestra los eventos de esta semana\n"+\
+"/mes: muestra los eventos de este mes\n"+\
+"/dias X: muestra los eventos entre hoy y dentro de X días\n"+\
+"/purgar_cola: elimina los eventos pendientes de confirmación\n"+\
+"/pendientes: muestra los eeventos almacenados sin confirmar\n"+\
+"/borrar_pasadas: elimina los eventos anteriores al día de hoy\n"+\
+"/borrar_todo: eliminna todos los eventos del calendario\n"
+
 
 def clear_pending(bot, update):
     """ Clears the list of pending dates to aprove """
@@ -32,22 +41,28 @@ def clear_pending(bot, update):
 
 def show_pending(bot, update):
     """ Shows the list of pending dates to aprove """
-    response = ""
-    for date_string, event in temp_date_dict:
-        response += "\n" + date_string + ": " + event
-    update.message.reply_text(response)
+    if temp_date_dict:
+        response = ""
+        for date_string, event in temp_date_dict:
+            response += "\n" + date_string + ": " + event
+        update.message.reply_text(response)
 
-def delete_old():
+
+def delete_old(bot, update):
     cal.delete_old()
     update.message.reply_text("Eliminadas entradas anteriores a hoy")
 
-def delete_all():
+
+def delete_all(bot, update):
     cal.delete_all()
     update.message.reply_text("Eliminadas todas las entradas")
 
-def days(bot, update, args=[1]):
+
+def days(bot, update, args):
     """ retrieves events for the following days """
-    days_events = cal.get_days(int(args[0]))
+    days = 1
+    if len(args): days = int(args[0])
+    days_events = cal.get_days(days)
     if days_events:
         update.message.reply_text("\n".join(days_events))
 
@@ -73,7 +88,7 @@ def start(bot, update):
 
 def help(bot, update):
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Nadie puede oir tus gritos')
+    update.message.reply_text('Lista de comandos:\n' + command_list)
 
 
 def echo(bot, update):
@@ -116,6 +131,7 @@ def button(bot, update):
     event, date = temp_date_dict.pop(int(emmiter_msg_id))
     print(temp_date_dict)
     cal.add_event(event, date)
+    cal.save_to_disk()
     date_string = str(date.day) + "/" + str(date.month) + "/" + str(date.year)
     bot.edit_message_text(text="Fecha guardada: {}".format(date_string),
                           chat_id=query.message.chat_id,
@@ -125,7 +141,6 @@ def button(bot, update):
 def error(bot, update, error):
     """Log Errors caused by Updates."""
     logger.warning('Update "%s" caused error "%s"', update, error)
-
 
 def main():
     """Start the bot."""
