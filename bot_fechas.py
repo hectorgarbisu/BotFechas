@@ -15,14 +15,13 @@ with open('./data/apikey', 'r') as apikey_file:
     TOKEN = apikey_file.read()
 
 # calendario object that handles calendar data (like storing and retrieving events)
-cal = calendario()
 
 calendarios = {}
 
 # temporal storage for events pending of confirmation by the user
 # Uses msg_id as key so only one date can be stored per message
-temp_date_dict = {}
 
+temp_date_dicts = {}
 # Define a few command handlers. These usually take the two arguments bot and
 # update. Error handlers also receive the raised TelegramError object in error.
 
@@ -38,53 +37,82 @@ command_list = "/start: no hace nada\n" + " /help: muestra esta lista\n" +\
 
 def clear_pending(bot, update):
     """ Clears the list of pending dates to aprove """
-    temp_date_dict.clear()
-    update.message.reply_text("Cola de entradas purgada")
+    chat_id = str(update.message.chat_id)
+    if temp_date_dicts[chat_id]:
+        temp_date_dicts[chat_id].clear()
+        update.message.reply_text("Cola de entradas purgada")
 
 
 def show_pending(bot, update):
     """ Shows the list of pending dates to aprove """
-    if temp_date_dict:
+    chat_id = str(update.message.chat_id)
+    if temp_date_dicts[chat_id]:
         response = ""
-        for date_string, event in temp_date_dict:
+        for date_string, event in temp_date_dicts[chat_id]:
             response += "\n" + date_string + ": " + event
         update.message.reply_text(response)
 
 
 def delete_old(bot, update):
-    cal.delete_old()
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
+    calendarios[chat_id].delete_old()
+    calendarios[chat_id].save_to_disk()
     update.message.reply_text("Eliminadas entradas anteriores a hoy")
 
 
 def delete_all(bot, update):
-    cal.delete_all()
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
+    calendarios[chat_id].delete_all()
+    calendarios[chat_id].save_to_disk()
     update.message.reply_text("Eliminadas todas las entradas")
 
 
 def days(bot, update, args):
     """ retrieves events for the following days """
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
     days = 1
     if len(args): days = int(args[0])
-    days_events = cal.get_days(days)
+    days_events = calendarios[chat_id].get_days(days)
     if days_events:
         update.message.reply_text("\n".join(days_events))
 
 
 def week(bot, update):
     """ retrieves current week events """
-    this_weeks_events = cal.get_this_week()
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
+    this_weeks_events = calendarios[chat_id].get_this_week()
     if this_weeks_events:
         update.message.reply_text("\n".join(this_weeks_events))
 
 def todo(bot, update):
     """ retrieves current week events """
-    all_events = cal.get_all()
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
+    all_events = calendarios[chat_id].get_all()
     if all_events: 
         update.message.reply_text("\n".join(all_events))
 
 def month(bot, update):
     """ retrieves current month events """
-    this_month_events = cal.get_this_month()
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
+    this_month_events = calendarios[chat_id].get_this_month()
     if this_month_events:
         update.message.reply_text("\n".join(this_month_events))
 
@@ -92,7 +120,9 @@ def month(bot, update):
 def start(bot, update):
     """Send a message when the command /start is issued."""
     chat_id = str(update.message.chat_id)
+    logger.info('chat comenzado con chat_id: %s', chat_id)    
     calendarios[chat_id] = calendario(chat_id)
+    temp_date_dicts[chat_id] = {}
     update.message.reply_text('Encendido')
 
 
@@ -111,14 +141,17 @@ def texto(bot, update):
     """ Handles text messages by trying to find a suitable date format. The first date-like
     structure is found, it is saved temporaryly in temp_date_dict, and is added to calendario
     upon confirmation by button  """
+    chat_id = str(update.message.chat_id)
+    if chat_id not in calendarios:
+        calendarios[chat_id] = calendario(chat_id)
+        temp_date_dicts[chat_id] = {}
     msg = update.message.text.lower()
     (date, trace) = get_date(msg)
-    print("message received: " + msg)
-    print(trace)
+    logger.info('trace "%s" for message:  "%s"', trace, msg)
     if not date:
         return
     msg_id = update.message.message_id
-    temp_date_dict[msg_id] = (msg, date)
+    temp_date_dicts[chat_id][msg_id] = (msg, date)
     reply_markup = InlineKeyboardMarkup(
         [[InlineKeyboardButton("Guardar en calendario", callback_data=msg_id)]])
     update.message.reply_text(response_text(
@@ -137,12 +170,13 @@ def response_text(msg, update, date):
 
 def button(bot, update):
     """ Tries to save the corresponding date and event to calendario """
+    #chat_id = str(update.callback_query.chat_id)
+    chat_id = str(update.callback_query.message.chat.id)
     query = update.callback_query
     emmiter_msg_id = query.data
-    event, date = temp_date_dict.pop(int(emmiter_msg_id))
-    print(temp_date_dict)
-    cal.add_event(event, date)
-    cal.save_to_disk()
+    event, date = temp_date_dicts[chat_id].pop(int(emmiter_msg_id))
+    calendarios[chat_id].add_event(event, date)
+    calendarios[chat_id].save_to_disk()
     date_string = str(date.day) + "/" + str(date.month) + "/" + str(date.year)
     bot.edit_message_text(text="Fecha guardada: {}".format(date_string),
                           chat_id=query.message.chat_id,
