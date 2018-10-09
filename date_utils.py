@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 import datetime
 import re
+import time
 
 months = "enero febrero marzo abril mayo junio julio agosto septiembre setiembre octubre noviembre diciembre".split()
 month_indices = [1, 2, 3, 4, 5, 6, 7, 8, 9, 9, 10, 11, 12]
@@ -65,6 +66,11 @@ def update_month_day(date, string):
                        written_month_day_indices+cardinal_month_day))[string.lstrip("0")]
     return datetime.date(today.year, today.month, int(day_idx))
 
+def date_to_total_days(date=datetime.date.today()):
+    return int(time.mktime(date.timetuple()))//(24*60*60) + 1
+
+def total_days_to_date(total_days = 0):
+    return datetime.date(1970, 1, 1) + datetime.timedelta(days= total_days)
 
 def is_month(token):
     return re.sub('[^a-zA-Z0-9-_*.]', '', token) in months or token.lstrip("0") in [str(x) for x in range(1, 13)]
@@ -73,6 +79,8 @@ def is_month(token):
 def is_month_day(string):
     return string.lstrip("0") in cardinal_month_day + written_month_day
 
+def date_to_string(date):
+    return date.day + "/" + date.month + "/" + date.year
 
 def replace_all(string, chars, final_char):
     new_string = string
@@ -112,3 +120,4 @@ if __name__ == "__main__":
     print(is_year("2994"), is_year("2018"), is_year("cuatro"))
     print(is_date("23-234/23"), is_date("23-4/23"), is_date("01/04"))
     print(str_to_date("23/04"), str_to_date("23-4-2020"))
+    print(total_days_to_date(date_to_total_days(datetime.date.today())))

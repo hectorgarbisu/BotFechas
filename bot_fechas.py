@@ -16,6 +16,9 @@ with open('./data/apikey', 'r') as apikey_file:
 
 # calendario object that handles calendar data (like storing and retrieving events)
 cal = calendario()
+
+calendarios = {}
+
 # temporal storage for events pending of confirmation by the user
 # Uses msg_id as key so only one date can be stored per message
 temp_date_dict = {}
@@ -73,6 +76,11 @@ def week(bot, update):
     if this_weeks_events:
         update.message.reply_text("\n".join(this_weeks_events))
 
+def todo(bot, update):
+    """ retrieves current week events """
+    all_events = cal.get_all()
+    if all_events: 
+        update.message.reply_text("\n".join(all_events))
 
 def month(bot, update):
     """ retrieves current month events """
@@ -83,7 +91,10 @@ def month(bot, update):
 
 def start(bot, update):
     """Send a message when the command /start is issued."""
+    chat_id = str(update.message.chat_id)
+    calendarios[chat_id] = calendario(chat_id)
     update.message.reply_text('Encendido')
+
 
 
 def help(bot, update):
@@ -155,6 +166,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("semana", week))
     dp.add_handler(CommandHandler("mes", month))
+    dp.add_handler(CommandHandler("todo", all))
     dp.add_handler(CommandHandler("dias", days, pass_args=True))
     dp.add_handler(CommandHandler("purgar_cola", clear_pending))
     dp.add_handler(CommandHandler("pendientes", show_pending))
