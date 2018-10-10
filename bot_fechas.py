@@ -96,7 +96,7 @@ def week(bot, update):
     if this_weeks_events:
         update.message.reply_text("\n".join(this_weeks_events))
 
-def todo(bot, update):
+def all(bot, update):
     """ retrieves current week events """
     chat_id = str(update.message.chat_id)
     if chat_id not in calendarios:

@@ -216,9 +216,8 @@ def get_date(msg):
 
     return (None, trace)
 
-
-if __name__ == "__main__":
-    from colorama import init, Fore, Back, Style
+def test():
+    from colorama import init, Fore, Style
     init(convert=True)
     mensajes_fechados = \
         [u"MENSAJES CON FECHA: dos de abril:",
@@ -274,3 +273,6 @@ if __name__ == "__main__":
         color = Fore.RED if date else Fore.GREEN
         print(color + ii + Style.RESET_ALL)
         print(trace, date)
+
+if __name__ == "__main__":
+    test()

@@ -80,7 +80,7 @@ def is_month_day(string):
     return string.lstrip("0") in cardinal_month_day + written_month_day
 
 def date_to_string(date):
-    return date.day + "/" + date.month + "/" + date.year
+    return "{}/{}/{}".format(date.day, date.month, date.year)
 
 def replace_all(string, chars, final_char):
     new_string = string
@@ -106,8 +106,7 @@ def str_to_date(string):
         tokens) == 3 else datetime.date.today().year
     return datetime.date(int(current_year), int(tokens[1]), int(tokens[0]))
 
-
-if __name__ == "__main__":
+def test():
     today = datetime.date.today()
     print(today)
     print(this_weekday_to_date("martes"))
@@ -120,4 +119,8 @@ if __name__ == "__main__":
     print(is_year("2994"), is_year("2018"), is_year("cuatro"))
     print(is_date("23-234/23"), is_date("23-4/23"), is_date("01/04"))
     print(str_to_date("23/04"), str_to_date("23-4-2020"))
+    print(date_to_string(str_to_date("10/10/10")))
     print(total_days_to_date(date_to_total_days(datetime.date.today())))
+
+if __name__ == "__main__":
+    test()

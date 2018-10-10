@@ -46,9 +46,9 @@ class calendario(object):
     
     def get_all(self):
         all_days = ""
-        for total_days, event in self.events:
+        for total_days, events in self.events.items():
             date = du.total_days_to_date(total_days)
-            all_days += du.date_to_string(date) + event
+            all_days += du.date_to_string(date) + str(events)
         return all_days
 
     def get_days(self, days=1, from_day=datetime.date.today()):
@@ -68,7 +68,7 @@ class calendario(object):
     def delete_old(self):
         self.events = {k: v for k, v in self.events.items() if k > du.date_to_total_days()}
 
-def main():
+def test():
     cal = calendario()
     today = datetime.date.today()
     cal.add_event(" esto es un evento ", today)
@@ -90,6 +90,8 @@ def main():
     print(cal.events)
     cal.load_from_disk()
     print(cal.events)
+    print(cal.get_all())
+
 
 if __name__ == "__main__":
-    main()
+    test()
