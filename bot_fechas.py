@@ -104,7 +104,7 @@ def all(bot, update):
         temp_date_dicts[chat_id] = {}
     all_events = calendarios[chat_id].get_all()
     if all_events: 
-        update.message.reply_text("\n".join(all_events))
+        update.message.reply_text(all_events)
 
 def month(bot, update):
     """ retrieves current month events """

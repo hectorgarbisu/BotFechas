@@ -9,24 +9,22 @@ import date_utils as du
 
 class calendario(object):
 
-
     def __init__(self, chat_id="default"):
-        self.calendar_path = "./data/calendar_object_"+ chat_id + ".dat"
+        self.calendar_path = "./data/calendar_object_" + chat_id + ".dat"
         #days_from_epoch = int(time.mktime(datetime.date.today().timetuple()))/(24*60*60)
         self.load_from_disk()
 
-    
     def load_from_disk(self):
-        try: 
-            calendar_file =  open(self.calendar_path, 'rb')
+        try:
+            calendar_file = open(self.calendar_path, 'rb')
             self.events = pickle.load(calendar_file)
-        except: 
+        except:
             self.events = {}
 
     def save_to_disk(self):
         with open(self.calendar_path, 'wb') as calendar_file:
             pickle.dump(self.events, calendar_file)
-           
+
     def add_event(self, event="", date=datetime.date.today()):
         """ add_event (event, date): saves string event at date """
         num = du.date_to_total_days(date)
@@ -43,12 +41,12 @@ class calendario(object):
     def get_this_month(self):
         today = datetime.date.today()
         return self.get_days(monthrange(today.year, today.month)[1], datetime.date(today.year, today.month, 1))
-    
+
     def get_all(self):
         all_days = ""
         for total_days, events in self.events.items():
             date = du.total_days_to_date(total_days)
-            all_days += du.date_to_string(date) + str(events)
+            all_days += du.date_to_string(date) + " : " + str(events) + "\n"
         return all_days
 
     def get_days(self, days=1, from_day=datetime.date.today()):
@@ -66,7 +64,9 @@ class calendario(object):
         self.events.clear()
 
     def delete_old(self):
-        self.events = {k: v for k, v in self.events.items() if k > du.date_to_total_days()}
+        self.events = {k: v for k, v in self.events.items() if k >
+                       du.date_to_total_days()}
+
 
 def test():
     cal = calendario()
