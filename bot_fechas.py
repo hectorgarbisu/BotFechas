@@ -83,7 +83,7 @@ def days(bot, update, args):
     if len(args): days = int(args[0])
     days_events = calendarios[chat_id].get_days(days)
     if days_events:
-        update.message.reply_text("\n".join(days_events))
+        update.message.reply_text(days_events)
 
 
 def week(bot, update):
@@ -94,7 +94,7 @@ def week(bot, update):
         temp_date_dicts[chat_id] = {}
     this_weeks_events = calendarios[chat_id].get_this_week()
     if this_weeks_events:
-        update.message.reply_text("\n".join(this_weeks_events))
+        update.message.reply_text(this_weeks_events)
 
 def all(bot, update):
     """ retrieves current week events """
@@ -114,7 +114,7 @@ def month(bot, update):
         temp_date_dicts[chat_id] = {}
     this_month_events = calendarios[chat_id].get_this_month()
     if this_month_events:
-        update.message.reply_text("\n".join(this_month_events))
+        update.message.reply_text(this_month_events)
 
 
 def start(bot, update):

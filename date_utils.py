@@ -65,13 +65,13 @@ def update_month_day(date, string):
     day_idx = dict(zip(written_month_day+cardinal_month_day,
                        written_month_day_indices+cardinal_month_day))[string.lstrip("0")]
     return datetime.date(today.year, today.month, int(day_idx))
-
+"""
 def date_to_total_days(date=datetime.date.today()):
-    return int(time.mktime(date.timetuple()))//(24*60*60) + 1
+    return int(time.mktime(date.timetuple()))//(24*60*60) 
 
 def total_days_to_date(total_days = 0):
     return datetime.date(1970, 1, 1) + datetime.timedelta(days= total_days)
-
+"""
 def is_month(token):
     return re.sub('[^a-zA-Z0-9-_*.]', '', token) in months or token.lstrip("0") in [str(x) for x in range(1, 13)]
 
@@ -120,7 +120,6 @@ def test():
     print(is_date("23-234/23"), is_date("23-4/23"), is_date("01/04"))
     print(str_to_date("23/04"), str_to_date("23-4-2020"))
     print(date_to_string(str_to_date("10/10/10")))
-    print(total_days_to_date(date_to_total_days(datetime.date.today())))
 
 if __name__ == "__main__":
     test()

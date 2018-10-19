@@ -27,11 +27,10 @@ class calendario(object):
 
     def add_event(self, event="", date=datetime.date.today()):
         """ add_event (event, date): saves string event at date """
-        num = du.date_to_total_days(date)
-        if num in self.events:
-            self.events[num].append(event)
+        if date in self.events:
+            self.events[date].append(event)
         else:
-            self.events[num] = [event]
+            self.events[date] = [event]
 
     def get_this_week(self):
         days_from_monday = datetime.date.today().weekday()
@@ -44,20 +43,17 @@ class calendario(object):
 
     def get_all(self):
         all_days = ""
-        for total_days, events in self.events.items():
-            date = du.total_days_to_date(total_days)
+        for date, events in self.events.items():
             all_days += du.date_to_string(date) + " : " + str(events) + "\n"
         return all_days
 
     def get_days(self, days=1, from_day=datetime.date.today()):
-        lapse = []
-        for ii in range(days):
+        lapse = ""
+        for ii in range(days): 
             delta = datetime.timedelta(days=ii)
             day = from_day + delta
-            if du.date_to_total_days(day) in self.events:
-                events_in_day = self.events[du.date_to_total_days(day)]
-                for event in events_in_day:
-                    lapse.append(event)
+            if day in self.events:
+                lapse += "{} : {} \n".format(du.date_to_string(day), str(self.events[day]))
         return lapse
 
     def delete_all(self):
@@ -65,11 +61,13 @@ class calendario(object):
 
     def delete_old(self):
         self.events = {k: v for k, v in self.events.items() if k >
-                       du.date_to_total_days()}
+                       datetime.date.today()}
 
 
 def test():
     cal = calendario()
+    cal.delete_all()
+    cal.save_to_disk()    
     today = datetime.date.today()
     cal.add_event(" esto es un evento ", today)
     cal.add_event(" esto es otro evento el mismo dia", today)
