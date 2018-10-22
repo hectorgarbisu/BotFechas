@@ -7,9 +7,10 @@ import date_utils as du
 
 
 class state_machine(object):
-    # Previous state is used to allow dates so that
-    # "el jueves" wont fire a positive answer if its part of
-    # a larger date such as "el jueves de la semana que viene"
+    """ Previous state is used to allow dates so that
+     "el jueves" wont fire a positive answer if its part of
+     a larger date such as "el jueves de la semana que viene" 
+    """
     def __init__(self):
         self.date = datetime.date.today()
         self.current_state = "S0"
@@ -31,6 +32,9 @@ class state_machine(object):
         if token == u'mañana':
             self.date = datetime.date.today() + datetime.timedelta(days=1)
             return "S8"
+        if token == u'hoy':
+            self.date = datetime.date.today()
+            return "S8"
         if token.endswith("a") and not token in ["para", "toca", "hola"]:
             return "S9"
         if token == "pasado":
@@ -43,7 +47,7 @@ class state_machine(object):
             return "SF"
         return "S0"
 
-    # mañana _
+    # mañana _ | hoy _
     def S8(self, token):
         return "S0"
 
@@ -242,7 +246,8 @@ def test():
          u" pasado mañana almuerzo con mis padres",
          u" el jueves primero de enero ",
          u" el 20 de junio de 1990 no estuvo nada mal",
-         u" el 20/06/1990 no estuvo nada mal"
+         u" el 20/06/1990 no estuvo nada mal",
+         u"habrá risas y fiestas hoy por la noche"
          ]
 
     mensajes_no_fechados = \
